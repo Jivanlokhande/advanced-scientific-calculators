@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pro Scientific Calculator</title>
+
+  <style>
+    body {
+      background: #121212;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial;
+      color: white;
+    }
+
+    .container {
+      display: flex;
+      gap: 15px;
+    }
+
+    .calculator {
+      background: #1e1e2f;
+      padding: 15px;
+      border-radius: 15px;
+      width: 360px;
+    }
+
+    #display {
+      width: 100%;
+      height: 60px;
+      font-size: 20px;
+      text-align: right;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 10px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    button {
+      height: 45px;
+      border: none;
+      border-radius: 6px;
+      background: #3e3e5e;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    button:hover { background: #57577a; }
+
+    .equal { background: #00c853; }
+    .clear { background: #d50000; }
+    .mode { background: #2962ff; }
+
+    .history {
+      width: 200px;
+      background: #1e1e2f;
+      padding: 10px;
+      border-radius: 10px;
+      overflow-y: auto;
+      height: 400px;
+      font-size: 12px;
+    }
+
+    .history h3 {
+      text-align: center;
+    }
+
+    .history div {
+      margin-bottom: 5px;
+      border-bottom: 1px solid gray;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- Calculator -->
+  <div class="calculator">
+
+    <h3 style="text-align:center;color:#00e676;">Scientific Calculator</h3>
+
+    <input type="text" id="display">
+
+    <div class="buttons">
+
+      <button class="mode" onclick="toggleMode()">DEG</button>
+      <button onclick="append('π')">π</button>
+      <button onclick="append('e')">e</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
+      <button class="clear" onclick="clearDisplay()">C</button>
+
+      <button onclick="append('sin(')">sin</button>
+      <button onclick="append('cos(')">cos</button>
+      <button onclick="append('tan(')">tan</button>
+      <button onclick="append('log(')">log</button>
+      <button onclick="append('ln(')">ln</button>
+      <button onclick="append('!')">!</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('/')">/</button>
+      <button onclick="append('^')">xʸ</button>
+      <button onclick="append('√(')">√</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('*')">*</button>
+      <button onclick="append('^2')">x²</button>
+      <button onclick="append('^3')">x³</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('-')">-</button>
+      <button onclick="backspace()">⌫</button>
+      <button onclick="calculate()" class="equal">=</button>
+
+      <button onclick="append('0')" style="grid-column: span 2;">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('+')">+</button>
+
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history" id="history">
+    <h3>History</h3>
+  </div>
+
+</div>
+
+<script>
+let display = document.getElementById("display");
+let historyBox = document.getElementById("history");
+let isDegree = true;
+
+// Input
+function append(val) {
+  display.value += val;
+}
+
+// Clear
+function clearDisplay() {
+  display.value = "";
+}
+
+// Backspace
+function backspace() {
+  display.value = display.value.slice(0, -1);
+}
+
+// Mode toggle
+function toggleMode() {
+  isDegree = !isDegree;
+  event.target.innerText = isDegree ? "DEG" : "RAD";
+}
+
+// Factorial
+function factorial(n) {
+  if (n < 0) return NaN;
+  if (n === 0) return 1;
+  return n * factorial(n - 1);
+}
+
+// Calculation Engine
+function calculate() {
+  try {
+    let expr = display.value;
+
+    expr = expr.replace(/π/g, "Math.PI");
+    expr = expr.replace(/e/g, "Math.E");
+
+    if (isDegree) {
+      expr = expr.replace(/sin\(([^)]+)\)/g, "Math.sin(($1)*Math.PI/180)");
+      expr = expr.replace(/cos\(([^)]+)\)/g, "Math.cos(($1)*Math.PI/180)");
+      expr = expr.replace(/tan\(([^)]+)\)/g, "Math.tan(($1)*Math.PI/180)");
+    } else {
+      expr = expr.replace(/sin\(([^)]+)\)/g, "Math.sin($1)");
+      expr = expr.replace(/cos\(([^)]+)\)/g, "Math.cos($1)");
+      expr = expr.replace(/tan\(([^)]+)\)/g, "Math.tan($1)");
+    }
+
+    expr = expr.replace(/log\(([^)]+)\)/g, "Math.log10($1)");
+    expr = expr.replace(/ln\(([^)]+)\)/g, "Math.log($1)");
+    expr = expr.replace(/√\(([^)]+)\)/g, "Math.sqrt($1)");
+    expr = expr.replace(/\^/g, "**");
+    expr = expr.replace(/(\d+)!/g, "factorial($1)");
+
+    let result = eval(expr);
+
+    addHistory(display.value + " = " + result);
+
+    display.value = result;
+
+  } catch {
+    display.value = "Error";
+  }
+}
+
+// History
+function addHistory(text) {
+  let div = document.createElement("div");
+  div.innerText = text;
+  historyBox.appendChild(div);
+}
+
+// Keyboard Support
+document.addEventListener("keydown", function(e) {
+  if (!isNaN(e.key) || "+-*/().".includes(e.key)) {
+    append(e.key);
+  } else if (e.key === "Enter") {
+    calculate();
+  } else if (e.key === "Backspace") {
+    backspace();
+  }
+});
+</script>
+
+</body>
+</html>
